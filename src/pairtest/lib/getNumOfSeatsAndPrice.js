@@ -3,6 +3,7 @@ import TicketTypeRequest from "./TicketTypeRequest";
 const ticketPriceByType = {
   ADULT: 20,
   CHILD: 10,
+  INFANT: 0,
 };
 
 export class TooManyTicketsException extends Error {}
@@ -10,19 +11,26 @@ export class NoAdultsException extends Error {}
 
 /**
  * @param {TicketTypeRequest[]} requests
- * @returns {{price: number; numOfTix: number}}
+ * @returns {{price: number; numOfSeats: number}}
  */
-export default function getNumOfTixAndPrice(requests) {
+export default function getNumOfSeatsAndPrice(requests) {
   const hasAdults = requests.some((req) => req.getTicketType() === "ADULT");
 
   if (!hasAdults) {
     throw new NoAdultsException();
   }
 
-  const numOfTix = requests.reduce((sum, req) => sum + req.getNoOfTickets(), 0);
-  if (numOfTix > 20) {
+  const numOfTickets = requests.reduce(
+    (sum, req) => sum + req.getNoOfTickets(),
+    0
+  );
+  if (numOfTickets > 20) {
     throw new TooManyTicketsException();
   }
+
+  const numOfSeats = requests
+    .filter((req) => req.getTicketType() !== "INFANT")
+    .reduce((sum, req) => sum + req.getNoOfTickets(), 0);
 
   const price = requests.reduce(
     (sum, req) =>
@@ -32,6 +40,6 @@ export default function getNumOfTixAndPrice(requests) {
 
   return {
     price,
-    numOfTix,
+    numOfSeats,
   };
 }
