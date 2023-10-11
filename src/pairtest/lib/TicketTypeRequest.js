@@ -46,6 +46,7 @@ export default class TicketTypeRequest {
   }
 
   /**
+   * @readonly
    * @type {TicketType[]}
    */
   #Type = ["ADULT", "CHILD", "INFANT"];
