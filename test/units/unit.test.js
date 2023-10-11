@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import TicketTypeRequest from "../../src/pairtest/lib/TicketTypeRequest";
 import getNumOfTixAndPrice, {
+  NoAdultsException,
   TooManyTicketsException,
 } from "../../src/pairtest/lib/getNumOfTixAndPrice";
 
@@ -50,6 +51,32 @@ describe("Normal scenarios with >= 1 one adult", () => {
     });
   });
 });
+describe("Children & Infants not allowed to buy their own tickets without adults", () => {
+  test("1 child => throws NoAdultsException", () => {
+    const requests = [new TicketTypeRequest("CHILD", 1)];
+    expect(() => getNumOfTixAndPrice(requests)).toThrowError(NoAdultsException);
+  });
+  test("17 child => throws NoAdultsException", () => {
+    const requests = [new TicketTypeRequest("CHILD", 17)];
+    expect(() => getNumOfTixAndPrice(requests)).toThrowError(NoAdultsException);
+  });
+  test("1 infant => throws NoAdultsException", () => {
+    const requests = [new TicketTypeRequest("INFANT", 1)];
+    expect(() => getNumOfTixAndPrice(requests)).toThrowError(NoAdultsException);
+  });
+  test("11 infants => throws NoAdultsException", () => {
+    const requests = [new TicketTypeRequest("INFANT", 11)];
+    expect(() => getNumOfTixAndPrice(requests)).toThrowError(NoAdultsException);
+  });
+  test("1 infant + 1 child => throws NoAdultsException", () => {
+    const requests = [
+      new TicketTypeRequest("INFANT", 1),
+      new TicketTypeRequest("CHILD", 1),
+    ];
+    expect(() => getNumOfTixAndPrice(requests)).toThrowError(NoAdultsException);
+  });
+});
+
 describe("Max 20 tickets allowed", () => {
   // TODO: test Infants
   test("21 adults => throws TooManyTicketsException", () => {
