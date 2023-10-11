@@ -6,8 +6,14 @@
  * Immutable Object.
  */
 export default class TicketTypeRequest {
+  /**
+   * @readonly
+   */
   #type;
 
+  /**
+   * @readonly
+   */
   #noOfTickets;
 
   /**
@@ -39,8 +45,6 @@ export default class TicketTypeRequest {
     return this.#type;
   }
 
-  // Constants
-  // TODO: this could be removed?
   /**
    * @type {TicketType[]}
    */
