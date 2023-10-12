@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import TicketTypeRequest from "../../src/pairtest/lib/TicketTypeRequest";
+import TicketTypeRequest from "../src/pairtest/lib/TicketTypeRequest";
 import getNumOfSeatsAndPrice, {
   NoAdultsException,
   TooManyTicketsException,
-} from "../../src/pairtest/lib/getNumOfSeatsAndPrice";
+} from "../src/pairtest/lib/getNumOfSeatsAndPrice";
 
 describe("Normal scenarios with >= 1 one adult, no infants", () => {
   test("1 adult => 20 pounds, 1 seat", () => {

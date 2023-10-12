@@ -1,6 +1,8 @@
 import TicketPaymentService from "../thirdparty/paymentgateway/TicketPaymentService.js";
 import SeatReservationService from "../thirdparty/seatbooking/SeatReservationService.js";
 import TicketTypeRequest from "./lib/TicketTypeRequest.js";
+import InvalidPurchaseException from "./lib/InvalidPurchaseException.js";
+import getNumOfSeatsAndPrice from "./lib/getNumOfSeatsAndPrice.js";
 
 export default class TicketService {
   /**
@@ -12,12 +14,22 @@ export default class TicketService {
    */
   #ticketPaymentService;
   /**
+   * @readonly
+   */
+  #getNumOfSeatsAndPrice;
+  /**
    * @param {SeatReservationService} seatReservationService
    * @param {TicketPaymentService} ticketPaymentService
+   * @param {getNumOfSeatsAndPrice} getNumOfSeatsAndPrice
    */
-  constructor(seatReservationService, ticketPaymentService) {
+  constructor(
+    seatReservationService,
+    ticketPaymentService,
+    getNumOfSeatsAndPrice
+  ) {
     this.#ticketPaymentService = ticketPaymentService;
     this.#seatReservationService = seatReservationService;
+    this.#getNumOfSeatsAndPrice = getNumOfSeatsAndPrice;
   }
   /**
    * @param {number} accountId
@@ -25,19 +37,7 @@ export default class TicketService {
    */
   // TODO: check accountId is valid
   purchaseTickets(accountId, ticketTypeRequests) {
-    this.#seatReservationService.reserveSeat(
-      accountId,
-      ticketTypeRequests[0].getNoOfTickets()
-    );
-    switch (ticketTypeRequests[0].getTicketType()) {
-      case "ADULT": {
-        this.#ticketPaymentService.makePayment(accountId, 20);
-        return;
-      }
-      case "CHILD": {
-        this.#ticketPaymentService.makePayment(accountId, 10);
-        return;
-      }
-    }
+    this.#getNumOfSeatsAndPrice(ticketTypeRequests);
+    // throw new InvalidPurchaseException();
   }
 }
