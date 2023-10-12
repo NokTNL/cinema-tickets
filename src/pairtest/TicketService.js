@@ -3,6 +3,10 @@ import SeatReservationService from "../thirdparty/seatbooking/SeatReservationSer
 import TicketTypeRequest from "./lib/TicketTypeRequest.js";
 import Utils from "./lib/Utils.js";
 
+export class InvalidAccountIdException extends Error {
+  message = "Account Id must be > 0";
+}
+
 export default class TicketService {
   /**
    * @readonly
@@ -34,14 +38,13 @@ export default class TicketService {
    * @param {number} accountId
    * @param  {TicketTypeRequest[]} ticketTypeRequests
    */
-  // TODO: check accountId is valid
-  // TODO: Check if array is longer than zero
-  // TODO: test handle exceptions?
   purchaseTickets(accountId, ticketTypeRequests) {
+    if (accountId <= 0) {
+      throw new InvalidAccountIdException();
+    }
     const { price, numOfSeats } =
       this.#getNumOfSeatsAndPrice(ticketTypeRequests);
     this.#seatReservationService.reserveSeat(accountId, numOfSeats);
     this.#ticketPaymentService.makePayment(accountId, price);
-    // throw new InvalidPurchaseException();
   }
 }

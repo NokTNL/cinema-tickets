@@ -2,6 +2,8 @@
  * @typedef {"ADULT" | "CHILD" | "INFANT"} TicketType
  */
 
+export class InvalidNumOfTicketsException extends Error {}
+
 /**
  * Immutable Object.
  */
@@ -31,6 +33,10 @@ export default class TicketTypeRequest {
 
     if (!Number.isInteger(noOfTickets)) {
       throw new TypeError("noOfTickets must be an integer");
+    }
+
+    if (noOfTickets <= 0) {
+      throw new TypeError("noOfTickets must be > 0");
     }
 
     this.#type = type;

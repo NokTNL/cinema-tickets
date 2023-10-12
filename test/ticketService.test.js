@@ -1,39 +1,12 @@
-import { describe, expect, test, vi } from "vitest";
-import TicketService from "../src/pairtest/TicketService";
+import { describe, expect, test } from "vitest";
+import { InvalidAccountIdException } from "../src/pairtest/TicketService";
 import TicketTypeRequest from "../src/pairtest/lib/TicketTypeRequest";
-import Utils from "../src/pairtest/lib/Utils";
-import TicketPaymentService from "../src/thirdparty/paymentgateway/TicketPaymentService";
-import SeatReservationService from "../src/thirdparty/seatbooking/SeatReservationService";
+import { injectDependenciesAndMock } from "./testUtils";
 
-/**
- * Mock all external dependencies
- */
-vi.mock("../src/thirdparty/paymentgateway/TicketPaymentService", () => {
-  return {
-    default: class {
-      makePayment = vi.fn();
-    },
-  };
-});
-vi.mock("../src/thirdparty/seatbooking/SeatReservationService", () => {
-  return {
-    default: class {
-      reserveSeat = vi.fn();
-    },
-  };
-});
-
-describe("TicketService: unit tests", () => {
+describe("TicketService: connectors unit tests", () => {
   test("TicketService calls getNumOfSeatsAndPrice with the correct args", () => {
-    const seatReservationService = new SeatReservationService();
-    const ticketPaymentService = new TicketPaymentService();
-    const spyGetNumOfSeatsAndPrice = vi.spyOn(Utils, "getNumOfSeatsAndPrice");
-
-    const ticketService = new TicketService(
-      seatReservationService,
-      ticketPaymentService,
-      Utils.getNumOfSeatsAndPrice
-    );
+    const { ticketService, spyGetNumOfSeatsAndPrice } =
+      injectDependenciesAndMock();
 
     const ticketRequests = [
       new TicketTypeRequest("ADULT", 1),
@@ -47,17 +20,17 @@ describe("TicketService: unit tests", () => {
     expect(spyGetNumOfSeatsAndPrice).toBeCalledWith(ticketRequests);
   });
   test("If getNumOfSeatsAndPrice returns valid price and seats, seat will be reserved and payment will go through", () => {
-    const seatReservationService = new SeatReservationService();
-    const ticketPaymentService = new TicketPaymentService();
-    const spyGetNumOfSeatsAndPrice = vi
-      .spyOn(Utils, "getNumOfSeatsAndPrice")
-      .mockImplementation(() => ({ price: 30, numOfSeats: 2 }));
-
-    const ticketService = new TicketService(
+    const {
+      ticketService,
       seatReservationService,
       ticketPaymentService,
-      Utils.getNumOfSeatsAndPrice
-    );
+      spyGetNumOfSeatsAndPrice,
+    } = injectDependenciesAndMock();
+
+    spyGetNumOfSeatsAndPrice.mockImplementationOnce(() => ({
+      price: 30,
+      numOfSeats: 2,
+    }));
 
     const ticketRequests = [
       new TicketTypeRequest("ADULT", 1),
@@ -73,19 +46,46 @@ describe("TicketService: unit tests", () => {
     expect(ticketPaymentService.makePayment).toHaveBeenCalledTimes(1);
     expect(ticketPaymentService.makePayment).toHaveBeenCalledWith(1440, 30);
   });
-});
-
-describe("TicketService: integration", () => {
-  test("Can buy 1 adult, 1 child & 1 infant ticket with correct price & number of tickets", () => {
-    const seatReservationService = new SeatReservationService();
-    const ticketPaymentService = new TicketPaymentService();
-    const spyGetNumOfSeatsAndPrice = vi.spyOn(Utils, "getNumOfSeatsAndPrice");
-
-    const ticketService = new TicketService(
+  test("TicketService throws any exceptions that are thrown by external dependencies", () => {
+    let {
+      ticketService,
       seatReservationService,
       ticketPaymentService,
-      Utils.getNumOfSeatsAndPrice
+      spyGetNumOfSeatsAndPrice,
+    } = injectDependenciesAndMock();
+
+    const ACCOUNT_ID = 1440;
+    const requests = [new TicketTypeRequest("ADULT", 1)];
+
+    // Mock getNumOfSeatsAndPrice throwing an error
+    spyGetNumOfSeatsAndPrice.mockImplementationOnce(() => {
+      throw Error("mock getNumOfSeatsAndPrice message");
+    });
+    expect(() => ticketService.purchaseTickets(ACCOUNT_ID, requests)).toThrow(
+      Error("mock getNumOfSeatsAndPrice message")
     );
+
+    // Mock seatReservationService throwing an error
+    seatReservationService.reserveSeat.mockImplementationOnce(() => {
+      throw Error("mock reserveSeat error message");
+    });
+    expect(() => ticketService.purchaseTickets(ACCOUNT_ID, requests)).toThrow(
+      Error("mock reserveSeat error message")
+    );
+
+    // Mock ticketPaymentService throwing an error
+    ticketPaymentService.makePayment.mockImplementationOnce(() => {
+      throw Error("mock makePayment error message");
+    });
+    expect(() => ticketService.purchaseTickets(ACCOUNT_ID, requests)).toThrow(
+      Error("mock makePayment error message")
+    );
+  });
+});
+describe("TicketService: integration", () => {
+  test("Can buy 1 adult, 1 child & 1 infant ticket with correct price & number of tickets reserved", () => {
+    const { ticketService, seatReservationService, ticketPaymentService } =
+      injectDependenciesAndMock();
 
     const ticketRequests = [
       new TicketTypeRequest("ADULT", 1),
@@ -100,5 +100,18 @@ describe("TicketService: integration", () => {
     expect(seatReservationService.reserveSeat).toHaveBeenCalledWith(13579, 2);
     expect(ticketPaymentService.makePayment).toHaveBeenCalledTimes(1);
     expect(ticketPaymentService.makePayment).toHaveBeenCalledWith(13579, 30);
+  });
+});
+describe("TicketService: edge cases ", () => {
+  test("accountId must be > 0", () => {
+    const { ticketService } = injectDependenciesAndMock();
+
+    const ticketRequests = [new TicketTypeRequest("ADULT", 1)];
+
+    const ACCOUNT_ID = 0;
+
+    expect(() =>
+      ticketService.purchaseTickets(ACCOUNT_ID, ticketRequests)
+    ).toThrowError(InvalidAccountIdException);
   });
 });

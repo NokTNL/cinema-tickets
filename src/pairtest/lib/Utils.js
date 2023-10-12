@@ -8,6 +8,7 @@ const ticketPriceByType = {
 
 export class TooManyTicketsException extends Error {}
 export class NoAdultsException extends Error {}
+export class NoTicketsException extends Error {}
 
 export default class Utils {
   /**
@@ -15,6 +16,10 @@ export default class Utils {
    * @returns {{price: number; numOfSeats: number}}
    */
   static getNumOfSeatsAndPrice(requests) {
+    if (requests.length === 0) {
+      throw new NoTicketsException();
+    }
+
     const hasAdults = requests.some((req) => req.getTicketType() === "ADULT");
 
     if (!hasAdults) {

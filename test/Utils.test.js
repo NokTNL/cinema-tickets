@@ -1,8 +1,11 @@
 import { describe, expect, test } from "vitest";
-import TicketTypeRequest from "../src/pairtest/lib/TicketTypeRequest";
+import TicketTypeRequest, {
+  InvalidNumOfTicketsException,
+} from "../src/pairtest/lib/TicketTypeRequest";
 import Utils, {
   NoAdultsException,
   TooManyTicketsException,
+  NoTicketsException,
 } from "../src/pairtest/lib/Utils";
 
 describe("Normal scenarios with >= 1 one adult, no infants", () => {
@@ -153,5 +156,22 @@ describe("Max 20 tickets allowed", () => {
       new TicketTypeRequest("INFANT", 19),
     ];
     expect(() => Utils.getNumOfSeatsAndPrice(requests)).not.toThrowError();
+  });
+});
+describe("Edge cases", () => {
+  test("Empty requests array => throws NoTicketsException", () => {
+    const requests = [];
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).toThrow(
+      NoTicketsException
+    );
+  });
+  test("Any ticket with amount 0 => throws TypeError", () => {
+    expect(() => new TicketTypeRequest("CHILD", 0)).toThrow(TypeError);
+  });
+  test("Any ticket with amount < 0 => throws TypeError", () => {
+    expect(() => new TicketTypeRequest("CHILD", -1)).toThrow(TypeError);
+  });
+  test("Any ticket with amount that is not an integer => throws TypeError", () => {
+    expect(() => new TicketTypeRequest("ADULT", 1.1)).toThrow(TypeError);
   });
 });
