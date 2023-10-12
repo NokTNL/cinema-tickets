@@ -1,8 +1,7 @@
 import TicketPaymentService from "../thirdparty/paymentgateway/TicketPaymentService.js";
 import SeatReservationService from "../thirdparty/seatbooking/SeatReservationService.js";
 import TicketTypeRequest from "./lib/TicketTypeRequest.js";
-import InvalidPurchaseException from "./lib/InvalidPurchaseException.js";
-import getNumOfSeatsAndPrice from "./lib/getNumOfSeatsAndPrice.js";
+import Utils from "./lib/Utils.js";
 
 export default class TicketService {
   /**
@@ -20,7 +19,7 @@ export default class TicketService {
   /**
    * @param {SeatReservationService} seatReservationService
    * @param {TicketPaymentService} ticketPaymentService
-   * @param {getNumOfSeatsAndPrice} getNumOfSeatsAndPrice
+   * @param {Utils.getNumOfSeatsAndPrice} getNumOfSeatsAndPrice
    */
   constructor(
     seatReservationService,
@@ -36,8 +35,13 @@ export default class TicketService {
    * @param  {TicketTypeRequest[]} ticketTypeRequests
    */
   // TODO: check accountId is valid
+  // TODO: Check if array is longer than zero
+  // TODO: test handle exceptions?
   purchaseTickets(accountId, ticketTypeRequests) {
-    this.#getNumOfSeatsAndPrice(ticketTypeRequests);
+    const { price, numOfSeats } =
+      this.#getNumOfSeatsAndPrice(ticketTypeRequests);
+    this.#seatReservationService.reserveSeat(accountId, numOfSeats);
+    this.#ticketPaymentService.makePayment(accountId, price);
     // throw new InvalidPurchaseException();
   }
 }

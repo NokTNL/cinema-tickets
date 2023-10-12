@@ -1,21 +1,21 @@
 import { describe, expect, test } from "vitest";
 import TicketTypeRequest from "../src/pairtest/lib/TicketTypeRequest";
-import getNumOfSeatsAndPrice, {
+import Utils, {
   NoAdultsException,
   TooManyTicketsException,
-} from "../src/pairtest/lib/getNumOfSeatsAndPrice";
+} from "../src/pairtest/lib/Utils";
 
 describe("Normal scenarios with >= 1 one adult, no infants", () => {
   test("1 adult => 20 pounds, 1 seat", () => {
     const requests = [new TicketTypeRequest("ADULT", 1)];
-    expect(getNumOfSeatsAndPrice(requests)).toEqual({
+    expect(Utils.getNumOfSeatsAndPrice(requests)).toEqual({
       price: 20,
       numOfSeats: 1,
     });
   });
   test("2 adults => 40 pounds, 2 seats", () => {
     const requests = [new TicketTypeRequest("ADULT", 2)];
-    expect(getNumOfSeatsAndPrice(requests)).toEqual({
+    expect(Utils.getNumOfSeatsAndPrice(requests)).toEqual({
       price: 40,
       numOfSeats: 2,
     });
@@ -25,7 +25,7 @@ describe("Normal scenarios with >= 1 one adult, no infants", () => {
       new TicketTypeRequest("CHILD", 1),
       new TicketTypeRequest("ADULT", 1),
     ];
-    expect(getNumOfSeatsAndPrice(requests)).toEqual({
+    expect(Utils.getNumOfSeatsAndPrice(requests)).toEqual({
       price: 30,
       numOfSeats: 2,
     });
@@ -35,7 +35,7 @@ describe("Normal scenarios with >= 1 one adult, no infants", () => {
       new TicketTypeRequest("CHILD", 3),
       new TicketTypeRequest("ADULT", 2),
     ];
-    expect(getNumOfSeatsAndPrice(requests)).toEqual({
+    expect(Utils.getNumOfSeatsAndPrice(requests)).toEqual({
       price: 70,
       numOfSeats: 5,
     });
@@ -47,7 +47,7 @@ describe("Tickets with infants", () => {
       new TicketTypeRequest("ADULT", 1),
       new TicketTypeRequest("INFANT", 1),
     ];
-    expect(getNumOfSeatsAndPrice(requests)).toEqual({
+    expect(Utils.getNumOfSeatsAndPrice(requests)).toEqual({
       price: 20,
       numOfSeats: 1,
     });
@@ -57,7 +57,7 @@ describe("Tickets with infants", () => {
       new TicketTypeRequest("ADULT", 1),
       new TicketTypeRequest("INFANT", 3),
     ];
-    expect(getNumOfSeatsAndPrice(requests)).toEqual({
+    expect(Utils.getNumOfSeatsAndPrice(requests)).toEqual({
       price: 20,
       numOfSeats: 1,
     });
@@ -68,7 +68,7 @@ describe("Tickets with infants", () => {
       new TicketTypeRequest("INFANT", 1),
       new TicketTypeRequest("CHILD", 1),
     ];
-    expect(getNumOfSeatsAndPrice(requests)).toEqual({
+    expect(Utils.getNumOfSeatsAndPrice(requests)).toEqual({
       price: 30,
       numOfSeats: 2,
     });
@@ -77,25 +77,25 @@ describe("Tickets with infants", () => {
 describe("Children & Infants not allowed to buy their own tickets without adults", () => {
   test("1 child => throws NoAdultsException", () => {
     const requests = [new TicketTypeRequest("CHILD", 1)];
-    expect(() => getNumOfSeatsAndPrice(requests)).toThrowError(
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).toThrowError(
       NoAdultsException
     );
   });
   test("17 child => throws NoAdultsException", () => {
     const requests = [new TicketTypeRequest("CHILD", 17)];
-    expect(() => getNumOfSeatsAndPrice(requests)).toThrowError(
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).toThrowError(
       NoAdultsException
     );
   });
   test("1 infant => throws NoAdultsException", () => {
     const requests = [new TicketTypeRequest("INFANT", 1)];
-    expect(() => getNumOfSeatsAndPrice(requests)).toThrowError(
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).toThrowError(
       NoAdultsException
     );
   });
   test("11 infants => throws NoAdultsException", () => {
     const requests = [new TicketTypeRequest("INFANT", 11)];
-    expect(() => getNumOfSeatsAndPrice(requests)).toThrowError(
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).toThrowError(
       NoAdultsException
     );
   });
@@ -104,7 +104,7 @@ describe("Children & Infants not allowed to buy their own tickets without adults
       new TicketTypeRequest("INFANT", 1),
       new TicketTypeRequest("CHILD", 3),
     ];
-    expect(() => getNumOfSeatsAndPrice(requests)).toThrowError(
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).toThrowError(
       NoAdultsException
     );
   });
@@ -113,7 +113,7 @@ describe("Children & Infants not allowed to buy their own tickets without adults
 describe("Max 20 tickets allowed", () => {
   test("21 adults => throws TooManyTicketsException", () => {
     const requests = [new TicketTypeRequest("ADULT", 21)];
-    expect(() => getNumOfSeatsAndPrice(requests)).toThrowError(
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).toThrowError(
       TooManyTicketsException
     );
   });
@@ -123,7 +123,7 @@ describe("Max 20 tickets allowed", () => {
       new TicketTypeRequest("CHILD", 1),
       new TicketTypeRequest("INFANT", 1),
     ];
-    expect(() => getNumOfSeatsAndPrice(requests)).toThrow(
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).toThrow(
       TooManyTicketsException
     );
   });
@@ -132,26 +132,26 @@ describe("Max 20 tickets allowed", () => {
       new TicketTypeRequest("ADULT", 1),
       new TicketTypeRequest("INFANT", 20),
     ];
-    expect(() => getNumOfSeatsAndPrice(requests)).toThrow(
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).toThrow(
       TooManyTicketsException
     );
   });
   test("20 adults is fine", () => {
     const requests = [new TicketTypeRequest("ADULT", 20)];
-    expect(() => getNumOfSeatsAndPrice(requests)).not.toThrowError();
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).not.toThrowError();
   });
   test("1 adult, 19 child is fine", () => {
     const requests = [
       new TicketTypeRequest("ADULT", 1),
       new TicketTypeRequest("CHILD", 19),
     ];
-    expect(() => getNumOfSeatsAndPrice(requests)).not.toThrowError();
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).not.toThrowError();
   });
   test("1 adult, 19 infants is fine", () => {
     const requests = [
       new TicketTypeRequest("ADULT", 1),
       new TicketTypeRequest("INFANT", 19),
     ];
-    expect(() => getNumOfSeatsAndPrice(requests)).not.toThrowError();
+    expect(() => Utils.getNumOfSeatsAndPrice(requests)).not.toThrowError();
   });
 });
