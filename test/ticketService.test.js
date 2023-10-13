@@ -1,12 +1,24 @@
 import { describe, expect, test } from "vitest";
-import { InvalidAccountIdException } from "../src/pairtest/TicketService";
+import TicketService, {
+  InvalidAccountIdException,
+} from "../src/pairtest/TicketService";
 import TicketTypeRequest from "../src/pairtest/lib/TicketTypeRequest";
-import { injectDependenciesAndMock } from "./testUtils";
+import { createMocks } from "./testUtils";
 
-describe("TicketService: connectors unit tests", () => {
+describe("TicketService: connectors tests", () => {
   test("TicketService calls getNumOfSeatsAndPrice with the correct args", () => {
-    const { ticketService, spyGetNumOfSeatsAndPrice } =
-      injectDependenciesAndMock();
+    const {
+      seatReservationService,
+      ticketPaymentService,
+      getNumOfSeatsAndPrice,
+      spyGetNumOfSeatsAndPrice,
+    } = createMocks();
+
+    const ticketService = new TicketService(
+      seatReservationService,
+      ticketPaymentService,
+      getNumOfSeatsAndPrice
+    );
 
     const ticketRequests = [
       new TicketTypeRequest("ADULT", 1),
@@ -21,11 +33,17 @@ describe("TicketService: connectors unit tests", () => {
   });
   test("If getNumOfSeatsAndPrice returns valid price and seats, seat will be reserved and payment will go through", () => {
     const {
-      ticketService,
       seatReservationService,
       ticketPaymentService,
+      getNumOfSeatsAndPrice,
       spyGetNumOfSeatsAndPrice,
-    } = injectDependenciesAndMock();
+    } = createMocks();
+
+    const ticketService = new TicketService(
+      seatReservationService,
+      ticketPaymentService,
+      getNumOfSeatsAndPrice
+    );
 
     spyGetNumOfSeatsAndPrice.mockImplementationOnce(() => ({
       price: 30,
@@ -47,12 +65,18 @@ describe("TicketService: connectors unit tests", () => {
     expect(ticketPaymentService.makePayment).toHaveBeenCalledWith(1440, 30);
   });
   test("TicketService throws any exceptions that are thrown by external dependencies", () => {
-    let {
-      ticketService,
+    const {
       seatReservationService,
       ticketPaymentService,
+      getNumOfSeatsAndPrice,
       spyGetNumOfSeatsAndPrice,
-    } = injectDependenciesAndMock();
+    } = createMocks();
+
+    const ticketService = new TicketService(
+      seatReservationService,
+      ticketPaymentService,
+      getNumOfSeatsAndPrice
+    );
 
     const ACCOUNT_ID = 1440;
     const requests = [new TicketTypeRequest("ADULT", 1)];
@@ -84,8 +108,17 @@ describe("TicketService: connectors unit tests", () => {
 });
 describe("TicketService: integration", () => {
   test("Can buy 1 adult, 1 child & 1 infant ticket with correct price & number of tickets reserved", () => {
-    const { ticketService, seatReservationService, ticketPaymentService } =
-      injectDependenciesAndMock();
+    const {
+      seatReservationService,
+      ticketPaymentService,
+      getNumOfSeatsAndPrice,
+    } = createMocks();
+
+    const ticketService = new TicketService(
+      seatReservationService,
+      ticketPaymentService,
+      getNumOfSeatsAndPrice
+    );
 
     const ticketRequests = [
       new TicketTypeRequest("ADULT", 1),
@@ -104,7 +137,17 @@ describe("TicketService: integration", () => {
 });
 describe("TicketService: edge cases ", () => {
   test("accountId must be > 0", () => {
-    const { ticketService } = injectDependenciesAndMock();
+    const {
+      seatReservationService,
+      ticketPaymentService,
+      getNumOfSeatsAndPrice,
+    } = createMocks();
+
+    const ticketService = new TicketService(
+      seatReservationService,
+      ticketPaymentService,
+      getNumOfSeatsAndPrice
+    );
 
     const ticketRequests = [new TicketTypeRequest("ADULT", 1)];
 

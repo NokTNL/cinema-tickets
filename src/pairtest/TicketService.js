@@ -23,7 +23,7 @@ export default class TicketService {
   /**
    * @param {SeatReservationService} seatReservationService
    * @param {TicketPaymentService} ticketPaymentService
-   * @param {getNumOfSeatsAndPrice} getNumOfSeatsAndPrice
+   * @param {typeof getNumOfSeatsAndPrice} getNumOfSeatsAndPrice
    */
   constructor(
     seatReservationService,

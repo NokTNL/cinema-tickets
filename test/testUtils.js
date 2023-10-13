@@ -1,8 +1,7 @@
 import { vi } from "vitest";
-import TicketService from "../src/pairtest/TicketService";
 import * as GetNumOfSeatsAndPrice from "../src/pairtest/lib/getNumOfSeatsAndPrice";
 
-export function injectDependenciesAndMock() {
+export function createMocks() {
   // Mock all third-party dependencies
   const seatReservationService = { reserveSeat: vi.fn() };
   const ticketPaymentService = { makePayment: vi.fn() };
@@ -12,16 +11,10 @@ export function injectDependenciesAndMock() {
     "getNumOfSeatsAndPrice"
   );
 
-  const ticketService = new TicketService(
-    seatReservationService,
-    ticketPaymentService,
-    GetNumOfSeatsAndPrice.getNumOfSeatsAndPrice
-  );
-
   return {
     seatReservationService,
     ticketPaymentService,
+    getNumOfSeatsAndPrice: GetNumOfSeatsAndPrice.getNumOfSeatsAndPrice,
     spyGetNumOfSeatsAndPrice,
-    ticketService,
   };
 }
