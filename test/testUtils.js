@@ -1,18 +1,21 @@
 import { vi } from "vitest";
 import TicketService from "../src/pairtest/TicketService";
-import Utils from "../src/pairtest/lib/Utils";
+import * as GetNumOfSeatsAndPrice from "../src/pairtest/lib/getNumOfSeatsAndPrice";
 
 export function injectDependenciesAndMock() {
   // Mock all third-party dependencies
   const seatReservationService = { reserveSeat: vi.fn() };
   const ticketPaymentService = { makePayment: vi.fn() };
   // Spy on internal libraries
-  const spyGetNumOfSeatsAndPrice = vi.spyOn(Utils, "getNumOfSeatsAndPrice");
+  const spyGetNumOfSeatsAndPrice = vi.spyOn(
+    GetNumOfSeatsAndPrice,
+    "getNumOfSeatsAndPrice"
+  );
 
   const ticketService = new TicketService(
     seatReservationService,
     ticketPaymentService,
-    Utils.getNumOfSeatsAndPrice
+    GetNumOfSeatsAndPrice.getNumOfSeatsAndPrice
   );
 
   return {

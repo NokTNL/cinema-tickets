@@ -1,7 +1,7 @@
 import TicketPaymentService from "../thirdparty/paymentgateway/TicketPaymentService.js";
 import SeatReservationService from "../thirdparty/seatbooking/SeatReservationService.js";
 import TicketTypeRequest from "./lib/TicketTypeRequest.js";
-import Utils from "./lib/Utils.js";
+import { getNumOfSeatsAndPrice } from "./lib/getNumOfSeatsAndPrice.js";
 
 export class InvalidAccountIdException extends Error {
   message = "Account Id must be > 0";
@@ -23,7 +23,7 @@ export default class TicketService {
   /**
    * @param {SeatReservationService} seatReservationService
    * @param {TicketPaymentService} ticketPaymentService
-   * @param {Utils.getNumOfSeatsAndPrice} getNumOfSeatsAndPrice
+   * @param {getNumOfSeatsAndPrice} getNumOfSeatsAndPrice
    */
   constructor(
     seatReservationService,
